@@ -91,8 +91,8 @@ export default function Leaderboard({ currentUserId }: LeaderboardProps) {
                             <div
                                 key={user.id}
                                 className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${user.id === currentUserId
-                                        ? "bg-primary/20 border-primary"
-                                        : "bg-muted/30 border-primary/30 hover:bg-muted/50 hover:border-primary/50"
+                                    ? "bg-primary/20 border-primary"
+                                    : "bg-muted/30 border-primary/30 hover:bg-muted/50 hover:border-primary/50"
                                     }`}
                             >
                                 <div className="flex items-center gap-4">
@@ -114,11 +114,12 @@ export default function Leaderboard({ currentUserId }: LeaderboardProps) {
                 )}
             </Card>
 
-            {/* Hall of Fallen */}
+            {/* Fallen Soldiers */}
             <Card className="bg-gradient-to-br from-card to-card/50 border-2 border-destructive/50 p-6">
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-destructive to-accent bg-clip-text text-transparent mb-6">
-                    💀 Hall of Fallen
+                    💀 Fallen Soldiers
                 </h2>
+                <p className="text-center text-muted-foreground text-sm mb-4">Jakul pa more</p>
 
                 {hallOfFallen.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">No one has failed yet</p>
@@ -128,8 +129,8 @@ export default function Leaderboard({ currentUserId }: LeaderboardProps) {
                             <div
                                 key={user.id}
                                 className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${user.id === currentUserId
-                                        ? "bg-destructive/20 border-destructive"
-                                        : "bg-muted/30 border-destructive/30 hover:bg-muted/50 hover:border-destructive/50"
+                                    ? "bg-destructive/20 border-destructive"
+                                    : "bg-muted/30 border-destructive/30 hover:bg-muted/50 hover:border-destructive/50"
                                     }`}
                             >
                                 <div className="flex items-center gap-4">

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -11,7 +10,6 @@ import CalendarView from "./calendar-view"
 import Leaderboard from "./leaderboard"
 import ProfilePage from "./profile-page"
 import CountdownTimer from "./countdown-timer"
-import { countFailuresForUser } from "@/lib/tracker-utils"
 import type { User } from "@supabase/supabase-js"
 
 interface CheckIn {
@@ -42,7 +40,19 @@ export default function Dashboard({ user, userData, checkIns: initialCheckIns }:
     const [daysSurvived, setDaysSurvived] = useState(0)
     const [userFailedAt, setUserFailedAt] = useState<string | null>(userData?.failed_at || null)
     const [isLoading, setIsLoading] = useState(false)
-    const router = useRouter()
+
+    const fetchCheckIns = async () => {
+        const supabase = createClient()
+        const { data } = await supabase
+            .from("check_ins")
+            .select("*")
+            .eq("user_id", user.id)
+        setCheckIns(data || [])
+    }
+
+    useEffect(() => {
+        fetchCheckIns()
+    }, [])
 
     useEffect(() => {
         if (userFailedAt) {
@@ -58,14 +68,21 @@ export default function Dashboard({ user, userData, checkIns: initialCheckIns }:
         }
     }, [userFailedAt])
 
-    const failureCount = countFailuresForUser(checkIns)
-    const isEliminated = failureCount >= 3 || !!userFailedAt
+    const isEliminated = !!userFailedAt
 
     const handleLogout = async () => {
         setIsLoading(true)
         const supabase = createClient()
         await supabase.auth.signOut()
-        router.push("/auth/login")
+        window.location.href = "/auth/login"
+    }
+
+    const handleCheckInUpdate = () => {
+        fetchCheckIns() // Re-fetch check-ins after update
+    }
+
+    const handleUserFailed = () => {
+        setUserFailedAt(new Date().toISOString().split("T")[0])
     }
 
     const todayCheckIn = checkIns.find((c) => c.date === new Date().toISOString().split("T")[0])
@@ -151,27 +168,13 @@ export default function Dashboard({ user, userData, checkIns: initialCheckIns }:
                                     </p>
                                 </div>
                             </Card>
-
-                            <Card className="bg-gradient-to-br from-card to-card/50 border-2 border-primary/50 p-6">
-                                <div className="text-center">
-                                    <p className="text-muted-foreground text-sm mb-2">Strikes</p>
-                                    <p className={`text-5xl font-bold ${failureCount >= 3 ? "text-destructive" : "text-primary"}`}>
-                                        {failureCount}/3
-                                    </p>
-                                    <p className="text-muted-foreground text-xs mt-2">failures</p>
-                                </div>
-                            </Card>
                         </div>
 
                         <CheckInForm
                             userId={user.id}
                             userHasFailed={isEliminated}
-                            onCheckInUpdate={() => {
-                                router.refresh()
-                            }}
-                            onUserFailed={() => {
-                                setUserFailedAt(new Date().toISOString().split("T")[0])
-                            }}
+                            onCheckInUpdate={handleCheckInUpdate}
+                            onUserFailed={handleUserFailed}
                         />
                     </TabsContent>
 

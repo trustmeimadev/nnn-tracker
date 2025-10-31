@@ -22,19 +22,18 @@ export default function CheckInConfirmation({
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <Card className="bg-card border-border/50 p-6 max-w-sm mx-4">
-                <h3 className="text-lg font-bold text-foreground mb-2">Confirm Check-in</h3>
+                <h3 className="text-lg font-bold text-foreground mb-2">Kumpirmahin ang Check-in</h3>
                 <p className="text-muted-foreground mb-6">
-                    Are you sure you want to mark {periodLabel} as{" "}
-                    <span className={isFailed ? "text-destructive font-bold" : "text-green-500 font-bold"}>
-                        {isFailed ? "Failed" : "Safe"}
-                    </span>
-                    ?
+                    {isFailed ? (
+                        <span className="text-destructive font-bold">
+                            PAG GIN MARK MO NA IBIG SABIHIN GAY KA AT TOTOONG PALAJAKUL
+                        </span>
+                    ) : (
+                        <span className="text-green-500 font-bold">
+                            Wehh di ka nagjakol this {periodLabel.toLowerCase()}
+                        </span>
+                    )}
                 </p>
-                {isFailed && (
-                    <p className="text-sm text-destructive mb-4 bg-destructive/10 p-3 rounded border border-destructive/50">
-                        ⚠️ This will count as a strike. 3 strikes and you&apos;re out!
-                    </p>
-                )}
                 <div className="flex gap-3">
                     <Button onClick={onCancel} disabled={isLoading} variant="outline" className="flex-1 bg-transparent">
                         Cancel

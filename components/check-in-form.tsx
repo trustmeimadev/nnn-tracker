@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import CheckInConfirmation from "./check-in-confirmation"
 
-// Define the CheckIn type
 interface CheckIn {
     id: string
     user_id: string
@@ -29,14 +28,32 @@ export default function CheckInForm({ userId, userHasFailed, onCheckInUpdate, on
         period: string
         isFailed: boolean
     } | null>(null)
-    const [todayCheckIn, setTodayCheckIn] = useState<CheckIn | null>(null) // Updated type
+    const [todayCheckIn, setTodayCheckIn] = useState<CheckIn | null>(null)
     const [todayDate, setTodayDate] = useState("")
+    const [currentPeriod, setCurrentPeriod] = useState<string | null>(null)
 
     useEffect(() => {
-        const today = new Date().toISOString().split("T")[0]
-        setTodayDate(today)
-        fetchTodayCheckIn(today)
-    }, [])
+        const updateDate = () => {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            setTodayDate(formattedDate);
+            fetchTodayCheckIn(formattedDate);
+            determineCurrentPeriod();
+        };
+
+        updateDate();
+
+        const now = new Date();
+        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const msUntilMidnight = tomorrow.getTime() - now.getTime();
+
+        const midnightTimer = setTimeout(updateDate, msUntilMidnight);
+
+        return () => clearTimeout(midnightTimer);
+    }, []);
 
     const fetchTodayCheckIn = async (date: string) => {
         const supabase = createClient()
@@ -47,13 +64,26 @@ export default function CheckInForm({ userId, userHasFailed, onCheckInUpdate, on
             .eq("date", date)
             .single()
 
-        setTodayCheckIn(data as CheckIn | null) // Explicitly type the fetched data
+        setTodayCheckIn(data as CheckIn | null)
+    }
+
+    const determineCurrentPeriod = () => {
+        const now = new Date()
+        const hour = now.getHours()
+
+        if (hour >= 0 && hour < 12) {
+            setCurrentPeriod("morning")
+        } else if (hour >= 12 && hour < 18) {
+            setCurrentPeriod("afternoon")
+        } else {
+            setCurrentPeriod("evening")
+        }
     }
 
     const periods = [
-        { id: "morning", label: "Morning", icon: "🌅", time: "12am - 12pm" },
-        { id: "afternoon", label: "Afternoon", icon: "☀️", time: "12pm - 6pm" },
-        { id: "evening", label: "Evening", icon: "🌙", time: "6pm - 12am" },
+        { id: "morning", label: "Hindi ka Nagjakul this morning", icon: "🌅", time: "12am - 12pm" },
+        { id: "afternoon", label: "Hindi ka Nagjakul this afternoon", icon: "☀️", time: "12pm - 6pm" },
+        { id: "evening", label: "Hindi ka Nagjakul this evening", icon: "🌙", time: "6pm - 12am" },
     ]
 
     const handleSafe = (period: string) => {
@@ -139,8 +169,9 @@ export default function CheckInForm({ userId, userHasFailed, onCheckInUpdate, on
 
                 <div className="space-y-4">
                     {periods.map((period) => {
-                        const periodValue = todayCheckIn?.[period.id as keyof CheckIn] // Explicitly type the key
+                        const periodValue = todayCheckIn?.[period.id as keyof CheckIn]
                         const isMarked = periodValue !== null
+                        const isCurrentPeriod = currentPeriod === period.id
 
                         return (
                             <div key={period.id} className="border border-border/50 rounded-lg p-4">
@@ -161,15 +192,21 @@ export default function CheckInForm({ userId, userHasFailed, onCheckInUpdate, on
                                 <div className="flex gap-3">
                                     <Button
                                         onClick={() => handleSafe(period.id)}
-                                        disabled={isLoading}
-                                        className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-600 border border-green-500/50"
+                                        disabled={isLoading || !isCurrentPeriod || isMarked}
+                                        className={`flex-1 ${isCurrentPeriod && !isMarked
+                                            ? "bg-green-500/20 hover:bg-green-500/30 text-green-600 border border-green-500/50"
+                                            : "bg-muted/20 text-muted-foreground border-muted/50 cursor-not-allowed"
+                                            }`}
                                     >
                                         {isLoading ? "..." : "✅ Safe"}
                                     </Button>
                                     <Button
                                         onClick={() => handleFailed(period.id)}
-                                        disabled={isLoading}
-                                        className="flex-1 bg-destructive/20 hover:bg-destructive/30 text-destructive border border-destructive/50"
+                                        disabled={isLoading || !isCurrentPeriod || isMarked}
+                                        className={`flex-1 ${isCurrentPeriod && !isMarked
+                                            ? "bg-destructive/20 hover:bg-destructive/30 text-destructive border border-destructive/50"
+                                            : "bg-muted/20 text-muted-foreground border-muted/50 cursor-not-allowed"
+                                            }`}
                                     >
                                         {isLoading ? "..." : "❌ Failed"}
                                     </Button>

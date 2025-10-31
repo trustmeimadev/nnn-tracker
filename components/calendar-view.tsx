@@ -25,9 +25,19 @@ export default function CalendarView({ checkIns }: CalendarViewProps) {
     const daysInMonth = 30 // November has 30 days
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay()
 
+    // Filter check-ins for November
+    const novemberCheckIns = checkIns.filter((c) => {
+        const checkInDate = new Date(c.date)
+        return (
+            checkInDate.getFullYear() === currentYear &&
+            checkInDate.getMonth() === currentMonth
+        )
+    })
+
+    // Create a map of check-ins for November
     const checkInMap = new Map(
-        checkIns.map((c) => {
-            const dateKey = c.date // Already in YYYY-MM-DD format from Supabase
+        novemberCheckIns.map((c) => {
+            const dateKey = new Date(c.date).toISOString().split("T")[0] // Ensure YYYY-MM-DD format
             return [dateKey, c]
         }),
     )
@@ -40,42 +50,79 @@ export default function CalendarView({ checkIns }: CalendarViewProps) {
         days.push(i)
     }
 
-    const getSafePeriodsForDay = (checkIn: CheckIn | undefined) => {
-        if (!checkIn) return 0
+    const getSafePeriodsForDay = (checkIn: CheckIn | undefined): { count: number; hasFailed: boolean } => {
+        if (!checkIn) return { count: 0, hasFailed: false }
         let count = 0
+        let hasFailed = false
+
+        // Count safe periods
         if (checkIn.morning === true) count++
         if (checkIn.afternoon === true) count++
         if (checkIn.evening === true) count++
-        return count
+
+        // Mark as failed if any period is explicitly false
+        if (
+            checkIn.morning === false ||
+            checkIn.afternoon === false ||
+            checkIn.evening === false
+        ) {
+            hasFailed = true
+        }
+
+        return { count, hasFailed }
     }
 
-    const getFailedPeriodForDay = (checkIn: CheckIn | undefined) => {
-        if (!checkIn) return null
-        if (checkIn.morning === false) return "morning"
-        if (checkIn.afternoon === false) return "afternoon"
-        if (checkIn.evening === false) return "evening"
-        return null
-    }
-
-    const getColorClass = (day: number) => {
+    const getCellStyle = (day: number) => {
         const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
         const checkIn = checkInMap.get(dateStr)
-        const failedPeriod = getFailedPeriodForDay(checkIn)
+        const { count, hasFailed } = getSafePeriodsForDay(checkIn)
 
-        if (failedPeriod) {
-            return "bg-destructive text-destructive-foreground border-2 border-red-600"
+        if (hasFailed) {
+            return {
+                backgroundImage: "url('/jakul.gif')", // Replace with the actual path to your failed GIF
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                color: "white",
+                border: "2px solid #ff0000", // Optional: Add a red border for emphasis
+            }
         }
 
-        const safePeriods = getSafePeriodsForDay(checkIn)
-        if (safePeriods === 3) {
-            return "bg-green-600 text-white" // Dark green - all 3 periods safe
-        } else if (safePeriods === 2) {
-            return "bg-green-500 text-white" // Medium green - 2 periods safe
-        } else if (safePeriods === 1) {
-            return "bg-green-400 text-white" // Light green - 1 period safe
+        if (count === 3) {
+            return {
+                backgroundImage: "url('/safe.gif')", 
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                color: "black",
+                border: "1px solid #d1d5db",
+            }
         }
 
-        return "bg-muted/30 text-muted-foreground border border-border/50" // Gray - not checked
+        if (count === 2) {
+            return {
+                backgroundImage: "url('/second.gif')", 
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                color: "black",
+                border: "1px solid #d1d5db",
+            }
+        }
+
+        if (count === 1) {
+            return {
+                backgroundImage: "url('/gooner.gif')", 
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                color: "black",
+                border: "1px solid #d1d5db",
+            }
+        }
+
+        // Default style for days without any check-ins
+        return {
+            backgroundColor: "#000",
+            color: "var(--color-muted-foreground)",
+            border: "1px solid var(--color-border)",
+        }
     }
 
     return (
@@ -84,19 +131,47 @@ export default function CalendarView({ checkIns }: CalendarViewProps) {
 
             <div className="flex gap-6 mb-6 text-sm flex-wrap">
                 <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-green-600"></div>
+                    <div
+                        className="w-4 h-4 rounded"
+                        style={{
+                            backgroundImage: "url('/safe.gif')",
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                        }}
+                    ></div>
                     <span className="text-muted-foreground">All 3 periods safe</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-green-500"></div>
+                    <div
+                        className="w-4 h-4 rounded"
+                        style={{
+                            backgroundImage: "url('/second.gif')",
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                        }}
+                    ></div>
                     <span className="text-muted-foreground">2 periods safe</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-green-400"></div>
+                    <div
+                        className="w-4 h-4 rounded"
+                        style={{
+                            backgroundImage: "url('/gooner.gif')",
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                        }}
+                    ></div>
                     <span className="text-muted-foreground">1 period safe</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-destructive border-2 border-red-600"></div>
+                    <div
+                        className="w-4 h-4 rounded"
+                        style={{
+                            backgroundImage: "url('/jakul.gif')",
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                        }}
+                    ></div>
                     <span className="text-muted-foreground">Failed</span>
                 </div>
             </div>
@@ -116,7 +191,8 @@ export default function CalendarView({ checkIns }: CalendarViewProps) {
                     return (
                         <div
                             key={day}
-                            className={`aspect-square flex items-center justify-center rounded-lg font-semibold text-sm transition-colors ${getColorClass(day)}`}
+                            style={getCellStyle(day)} // Apply dynamic styles here
+                            className="aspect-square flex items-center justify-center rounded-lg font-semibold text-sm transition-colors"
                         >
                             {day}
                         </div>

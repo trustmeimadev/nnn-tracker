@@ -11,7 +11,7 @@ export default function Home() {
 
   useEffect(() => {
     const now = new Date()
-    const inNovember = now.getMonth() === 10 // November is month 10 (0-indexed)
+    const inNovember = now.getMonth() === 10  // November is month 10 (0-indexed)
     setIsNovember(inNovember)
     setIsLoading(false)
 

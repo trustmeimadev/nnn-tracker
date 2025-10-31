@@ -89,7 +89,7 @@ export default function CalendarView({ checkIns }: CalendarViewProps) {
 
         if (count === 3) {
             return {
-                backgroundImage: "url('/safe.gif')", 
+                backgroundImage: "url('/safe.gif')",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 color: "black",
@@ -99,7 +99,7 @@ export default function CalendarView({ checkIns }: CalendarViewProps) {
 
         if (count === 2) {
             return {
-                backgroundImage: "url('/second.gif')", 
+                backgroundImage: "url('/second.gif')",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 color: "black",
@@ -109,7 +109,7 @@ export default function CalendarView({ checkIns }: CalendarViewProps) {
 
         if (count === 1) {
             return {
-                backgroundImage: "url('/gooner.gif')", 
+                backgroundImage: "url('/never-goon.png')",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 color: "black",

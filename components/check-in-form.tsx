@@ -57,14 +57,42 @@ export default function CheckInForm({ userId, userHasFailed, onCheckInUpdate, on
 
     const fetchTodayCheckIn = async (date: string) => {
         const supabase = createClient()
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from("check_ins")
             .select("*")
             .eq("user_id", userId)
             .eq("date", date)
             .single()
 
-        setTodayCheckIn(data as CheckIn | null)
+        if (error && error.code === "PGRST116") {
+            // If no entry exists, create one
+            const { error: insertError } = await supabase.from("check_ins").insert({
+                user_id: userId,
+                date,
+                morning: null,
+                afternoon: null,
+                evening: null,
+            })
+
+            // if (insertError) {
+            //     console.error("Error creating today's check-in:", insertError)
+            // } else {
+            //     console.log("Today's check-in entry created")
+            // }
+
+            setTodayCheckIn({
+                id: "",
+                user_id: userId,
+                date,
+                morning: null,
+                afternoon: null,
+                evening: null,
+            })
+        } else if (data) {
+            setTodayCheckIn(data as CheckIn)
+        } else {
+            console.error("Error fetching today's check-in:", error)
+        }
     }
 
     const determineCurrentPeriod = () => {

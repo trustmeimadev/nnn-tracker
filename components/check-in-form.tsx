@@ -44,16 +44,33 @@ export default function CheckInForm({ userId, userHasFailed, onCheckInUpdate, on
             determineCurrentPeriod();
         };
 
+        const checkForMissedCheckIns = async () => {
+            if (todayCheckIn) {
+                const { morning, afternoon, evening } = todayCheckIn;
+                if (morning === null || afternoon === null || evening === null) {
+                    const supabase = createClient();
+                    await supabase
+                        .from("users")
+                        .update({ failed_at: todayDate })
+                        .eq("id", userId);
+                    onUserFailed();
+                }
+            }
+        };
+
         updateDate();
 
         const now = new Date();
         const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
         const msUntilMidnight = tomorrow.getTime() - now.getTime();
 
-        const midnightTimer = setTimeout(updateDate, msUntilMidnight);
+        const midnightTimer = setTimeout(() => {
+            checkForMissedCheckIns();
+            updateDate();
+        }, msUntilMidnight);
 
         return () => clearTimeout(midnightTimer);
-    }, []);
+    }, [todayCheckIn]);
 
     const fetchTodayCheckIn = async (date: string) => {
         const supabase = createClient()
@@ -74,11 +91,7 @@ export default function CheckInForm({ userId, userHasFailed, onCheckInUpdate, on
                 evening: null,
             })
 
-            // if (insertError) {
-            //     console.error("Error creating today's check-in:", insertError)
-            // } else {
-            //     console.log("Today's check-in entry created")
-            // }
+           
 
             setTodayCheckIn({
                 id: "",

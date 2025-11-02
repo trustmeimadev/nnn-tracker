@@ -79,11 +79,11 @@ export default function CalendarView({ checkIns }: CalendarViewProps) {
 
         if (hasFailed) {
             return {
-                backgroundImage: "url('/jakul.gif')", // Replace with the actual path to your failed GIF
+                backgroundImage: "url('/jakul.gif')", 
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 color: "white",
-                border: "2px solid #ff0000", // Optional: Add a red border for emphasis
+                border: "2px solid #ff0000", 
             }
         }
 

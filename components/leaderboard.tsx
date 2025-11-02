@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Card } from "@/components/ui/card"
+import Image from "next/image" // Import Next.js Image component
 
 interface User {
     id: string
@@ -96,8 +97,31 @@ export default function Leaderboard({ currentUserId }: LeaderboardProps) {
                                     }`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="text-2xl font-bold w-8 text-center">
-                                        {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : idx + 1}
+                                    <div className="w-12 h-12 relative">
+                                        {idx === 0 && (
+                                            <Image
+                                                src="/first-place.gif"
+                                                alt="First Place"
+                                                layout="fill"
+                                            // className=""
+                                            />
+                                        )}
+                                        {idx === 1 && (
+                                            <Image
+                                                src="/second-place.gif"
+                                                alt="Second Place"
+                                                layout="fill"
+                                            // className="rounded-full"
+                                            />
+                                        )}
+                                        {idx === 2 && (
+                                            <Image
+                                                src="/third-place.gif"
+                                                alt="Third Place"
+                                                layout="fill"
+                                            // className="rounded-full"
+                                            />
+                                        )}
                                     </div>
                                     <div>
                                         <p className="font-semibold text-foreground">{user.username}</p>
@@ -114,7 +138,7 @@ export default function Leaderboard({ currentUserId }: LeaderboardProps) {
                 )}
             </Card>
 
-            {/* Fallen Soldiers */}
+
             <Card className="bg-gradient-to-br from-card to-card/50 border-2 border-destructive/50 p-6">
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-destructive to-accent bg-clip-text text-transparent mb-6">
                     💀 Fallen Soldiers
